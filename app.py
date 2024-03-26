@@ -1,31 +1,20 @@
 from flask import Flask, render_template, request
+from finance_info import queryStockInfo, getCurrentTime
+# import dotenv
 
 app = Flask('__name__')
 
-# @app.route('/<val>')
-# def home(val):
-#     return render_template('index.html')
-
-@app.route('/<val>')
-def home(val):
-    return render_template('index.html', val=val)
-
-@app.route('/new')
-def new_route():
-    return render_template('index.html')
-
-@app.route('/acc_var/<val>')
-def read_val(val):
-    return 'The value is %s' %val
-
-@app.route('/calculate', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def calculator():
     result = None
+    current_time = None
     if request.method == 'POST':
-        num1 = request.form.get('num1',type=float)
-        num2 = request.form.get('num2',type=float)
-        result = num1 + num2
-    return render_template('calculate.html', result=result)
+        current_time = getCurrentTime()
+        symbol = request.form.get('symbol',type=str)
+        result = queryStockInfo(symbol=symbol)
+        if isinstance(result, str):
+            return render_template('quote_error.html', result=result)
+    return render_template('quote.html', result=result, current_time=current_time)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
